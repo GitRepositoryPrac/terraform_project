@@ -1,5 +1,5 @@
 provider "aws" {
-    access_key = "XXX"
+     access_key = "XXXX"
     secret_key = "XXXX"
     #region = "us-west-1"
     region = var.region
@@ -12,11 +12,15 @@ variable "region" {
     default =  "us-west-1"
     description = "region in which ntier2 has to be created"
 }
+variable "vpccidr" {
+    type = string
+    default = "192.168.0.0/16"
 
+}
 #we need to create a VPC resource
 
 resource "aws_vpc" "ntiervpc2" {
-    cidr_block = "192.168.0.0/16"
+    cidr_block = var.vpccidr  #"192.168.0.0/16"
     enable_dns_support = true
     enable_dns_hostnames = true
              
