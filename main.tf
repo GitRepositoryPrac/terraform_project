@@ -1,6 +1,6 @@
 provider "aws" {
-    access_key = "XXXXX"
-    secret_key = "XXXXX"
+    access_key = "XXX"
+    secret_key = "XXXX"
     #region = "us-west-1"
     region = var.region
 
@@ -35,6 +35,7 @@ resource "aws_subnet" "web1" {
 
   #lets create a subnet  web2
 resource "aws_subnet" "web2" {
+    #resource_type.resource_name.attribute_ID.
     vpc_id = aws_vpc.ntiervpc2.id
     cidr_block = "192.168.1.0/24"
     availability_zone = "us-west-1c"
