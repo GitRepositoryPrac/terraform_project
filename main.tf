@@ -27,10 +27,13 @@ resource "aws_subnet" "subnets" { #here we has declare "subnets" this one is cal
 
 # cidr_block = var.cidrranges[count.index]     #cidrranges this varible declared in variable.tf file
     cidr_block = cidrsubnet(var.vpccidr,8,count.index)
-    availability_zone = var.subnetazs[count.index]
-   
+    #availability_zone = var.subnetazs[count.index]
+   #instared of above code by using extensonal operator
+    availability_zone = "${var.region}${count.index % 2 == 0 ? "a" : "c"}"
       tags = {
-          "Name" = var.subnets[count.index]
+          #"Name" = var.subnets[count.index]   
+          #Observe here we can call to "local.tf" file directly
+          "Name" = local.subnets[count.index]
       }
     depends_on =[
         aws_vpc.ntiervpc2
@@ -59,3 +62,17 @@ resource "aws_subnet" "subnets" { #here we has declare "subnets" this one is cal
      #   "Name" = "web2_tf2"
     #}
   #}
+
+
+#Here creating the "Internet Gate way of the application"
+resource "aws_internet_gateway" "ntiergw" {
+  vpc_id = aws_vpc.ntiervpc2.id
+  
+  tags = {
+    "Name" = local.igw_name
+  }
+
+  depends_on = [ 
+    aws_vpc.ntiervpc2
+   ]
+}
