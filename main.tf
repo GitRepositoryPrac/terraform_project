@@ -72,7 +72,59 @@ resource "aws_internet_gateway" "ntiergw" {
     "Name" = local.igw_name
   }
 
+  
+}
+
+#Create a route table
+resource "aws_route_table" "publicrt" {
+   vpc_id = aws_vpc.ntiervpc2.id
+
+  route  {
+    #count = 6
+    cidr_block = local.anywhere  #subnet[count.insex]
+    gateway_id = aws_internet_gateway.ntiergw.id
+
+  }
+
+#Depends related 
   depends_on = [ 
-    aws_vpc.ntiervpc2
+    aws_vpc.ntiervpc2,
+    aws_subnet.subnets[0],
+    aws_subnet.subnets[1]
+
+   ]  
+}
+
+
+#resource "aws_route_table_association" "web1association" {
+ # route_table_id = aws_route_table.publicrt.id
+  #subnet_id = aws_subnet.subnets[0].id
+  
+  #depends_on = [ 
+   # aws_route_table.publicrt
+   #]
+  
+#}
+
+
+#resource "aws_route_table_association" "web2association" {
+ # route_table_id = aws_route_table.publicrt.id
+  #subnet_id = aws_subnet.subnets[1].id
+  
+  #depends_on = [ 
+   # aws_route_table.publicrt
+   #]
+  
+#}
+
+
+resource "aws_route_table_association" "webassociation" {
+  count = 2
+  route_table_id = aws_route_table.publicrt.id
+  subnet_id = aws_subnet.subnets[count.index].id
+  
+  depends_on = [ 
+    aws_route_table.publicrt
    ]
+  
 }
