@@ -7,19 +7,15 @@ provider "aws" {
 }
 
 #we need to create a VPC resource
-## Variable code is there here so delete that perticular code then we can write the code seperatly.
-## the file name called "variable.tf"
 resource "aws_vpc" "ntiervpc2" {
     cidr_block = var.vpccidr  #"192.168.0.0/16"
     enable_dns_support = true
     enable_dns_hostnames = true
-             
+         
              tags = {
                  "Name" = "From tf" 
              }
 }
-#lets create a subnet web1 
-# how to declare multile subnets in loo 
 #let's create all subnets
 resource "aws_subnet" "subnets" { #here we has declare "subnets" this one is callin at "tags" file
     count = 6 # here we create 6 subnets that's why we can declare the variable in 6(count 6)
@@ -39,31 +35,6 @@ resource "aws_subnet" "subnets" { #here we has declare "subnets" this one is cal
         aws_vpc.ntiervpc2
     ]
 }
-#modify the below code and the different subnets we can declre the only one subnet code
-# this code related variable data 
-#we can declared in variable.tf file
-
-##resource "aws_subnet" "web1" {
-  ##  vpc_id = aws_vpc.ntiervpc2.id
-    ##cidr_block = "192.168.0.0/24"
-    ##availability_zone = "us-west-1a"
-    ##tags = {
-      ##  "Name" = "web1"
-    ##}
-  ##}
-
-  #lets create a subnet  web2
-#resource "aws_subnet" "web2" {
-    #resource_type.resource_name.attribute_ID.
- #   vpc_id = aws_vpc.ntiervpc2.id
-  #  cidr_block = "192.168.1.0/24"
-   # availability_zone = "us-west-1c"
-    #tags = {
-     #   "Name" = "web2_tf2"
-    #}
-  #}
-
-
 #Here creating the "Internet Gate way of the application"
 resource "aws_internet_gateway" "ntiergw" {
   vpc_id = aws_vpc.ntiervpc2.id
@@ -71,8 +42,6 @@ resource "aws_internet_gateway" "ntiergw" {
   tags = {
     "Name" = local.igw_name
   }
-
-  
 }
 
 #Create a route table
@@ -83,7 +52,6 @@ resource "aws_route_table" "publicrt" {
     #count = 6
     cidr_block = local.anywhere  #subnet[count.insex]
     gateway_id = aws_internet_gateway.ntiergw.id
-
   }
 
 #Depends related 
@@ -91,34 +59,16 @@ resource "aws_route_table" "publicrt" {
     aws_vpc.ntiervpc2,
     aws_subnet.subnets[0],
     aws_subnet.subnets[1]
+    
 
-   ]  
+   ]
+   tags = {
+    "Name" = "publicrt"
+  }  
 }
 
-
-#resource "aws_route_table_association" "web1association" {
- # route_table_id = aws_route_table.publicrt.id
-  #subnet_id = aws_subnet.subnets[0].id
-  
-  #depends_on = [ 
-   # aws_route_table.publicrt
-   #]
-  
-#}
-
-
-#resource "aws_route_table_association" "web2association" {
- # route_table_id = aws_route_table.publicrt.id
-  #subnet_id = aws_subnet.subnets[1].id
-  
-  #depends_on = [ 
-   # aws_route_table.publicrt
-   #]
-  
-#}
-
-
-resource "aws_route_table_association" "webassociation" {
+# we can associate the web related
+resource "aws_route_table_association" "webassociations" {
   count = 2
   route_table_id = aws_route_table.publicrt.id
   subnet_id = aws_subnet.subnets[count.index].id
@@ -128,3 +78,30 @@ resource "aws_route_table_association" "webassociation" {
    ]
   
 }
+
+resource "aws_route_table" "privatert" {
+  vpc_id = aws_vpc.ntiervpc2.id
+  #Depends related 
+  depends_on = [ 
+    aws_vpc.ntiervpc2,
+    aws_subnet.subnets[3],
+    aws_subnet.subnets[4],
+    aws_subnet.subnets[5],
+    aws_subnet.subnets[6]
+   ]
+  tags = {
+    "Name" = "privatert"
+  }
+
+}
+resource "aws_route_table_association" "app1associations" {  # here main theme is we are not write any
+   count = 4
+    route_table_id = aws_route_table.privatert.id
+    subnet_id = aws_subnet.subnets[count.index].id
+  depends_on = [
+     aws_route_table.privatert
+   ]
+ 
+}
+#  route_table_id = aws_route_table.publicrt.id
+#  subnet_id = aws_subnet.subnets[count.index].id
